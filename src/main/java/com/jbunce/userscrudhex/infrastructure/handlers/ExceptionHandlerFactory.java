@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.jbunce.userscrudhex.application.dtos.response.BaseResponse;
-
-import jakarta.persistence.EntityNotFoundException;
+import com.jbunce.userscrudhex.infrastructure.exceptions.EntityNotFoundException;
 
 @ControllerAdvice
 public class ExceptionHandlerFactory {
@@ -27,7 +26,7 @@ public class ExceptionHandlerFactory {
             .message(exception.getLocalizedMessage())
             .success(Boolean.FALSE)
             .status(HttpStatus.NOT_FOUND)
-            .statusCode(404).build().toResponseEntity();
+                .statusCode(404).build().toResponseEntity();
     }
     
 }

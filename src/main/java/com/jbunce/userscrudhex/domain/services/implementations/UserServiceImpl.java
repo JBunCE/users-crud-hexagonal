@@ -10,26 +10,25 @@ import com.jbunce.userscrudhex.application.dtos.request.UserRequest;
 import com.jbunce.userscrudhex.application.dtos.response.BaseResponse;
 import com.jbunce.userscrudhex.application.dtos.response.UserReponse;
 import com.jbunce.userscrudhex.domain.entities.User;
-import com.jbunce.userscrudhex.domain.repositories.IUserRepository;
 import com.jbunce.userscrudhex.domain.services.IUserService;
 import com.jbunce.userscrudhex.domain.utilities.TimeUtils;
+import com.jbunce.userscrudhex.infrastructure.exceptions.EntityNotFoundException;
+import com.jbunce.userscrudhex.infrastructure.repositories.IUserMongoRepository;
 
-import jakarta.persistence.EntityNotFoundException;
 
 public class UserServiceImpl implements IUserService {
 
-    private final IUserRepository userRepository;
+    private final IUserMongoRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(IUserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(IUserMongoRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public BaseResponse findAll() {
-        List<User> users = userRepository.findAll();
-        
+        List<User> users = userRepository.findAll().stream().filter(user -> !user.validateDelete()).collect(Collectors.toList());
         List<UserReponse> userReponse = users.stream().map(this::toUserReponse).collect(Collectors.toList());
 
         return BaseResponse.builder()
@@ -41,8 +40,12 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public BaseResponse findById(Long id) {
+    public BaseResponse findById(String id) {
         User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+
+        if (user.validateDelete()) {
+            throw new EntityNotFoundException();
+        }
 
         return BaseResponse.builder()
             .data(toUserReponse(user))
@@ -67,7 +70,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public BaseResponse update(Long id, UserRequest userRequest) {
+    public BaseResponse update(String id, UserRequest userRequest) {
         User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         user.update(userRequest, passwordEncoder.encode(userRequest.getPassword()));
         userRepository.save(user);
@@ -81,7 +84,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public BaseResponse delete(Long id) {
+    public BaseResponse delete(String id) {
         User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         user.delete();
         userRepository.save(user);

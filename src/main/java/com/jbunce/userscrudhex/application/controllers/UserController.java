@@ -29,7 +29,7 @@ public class UserController {
     }
 
     @GetMapping("{userId}")
-    public ResponseEntity<BaseResponse> getMethodName(@PathVariable Long userId) {
+    public ResponseEntity<BaseResponse> getMethodName(@PathVariable String userId) {
         return userService.findById(userId).toResponseEntity();
     }
 
@@ -39,12 +39,12 @@ public class UserController {
     }
 
     @PutMapping("{userId}")
-    public ResponseEntity<BaseResponse> update(@PathVariable Long userId, @RequestBody UserRequest request) {
+    public ResponseEntity<BaseResponse> update(@PathVariable String userId, @RequestBody UserRequest request) {
         return userService.update(userId, request).toResponseEntity();
     }
 
     @DeleteMapping("{userId}")
-    public ResponseEntity<BaseResponse> delete(@PathVariable Long userId) {
+    public ResponseEntity<BaseResponse> delete(@PathVariable String userId) {
         return userService.delete(userId).toResponseEntity();
     }
 

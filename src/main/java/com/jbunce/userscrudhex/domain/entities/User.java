@@ -2,37 +2,28 @@ package com.jbunce.userscrudhex.domain.entities;
 
 import java.time.LocalDate;
 
-import com.jbunce.userscrudhex.application.dtos.request.UserRequest;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.jbunce.userscrudhex.application.dtos.request.UserRequest;
+import com.jbunce.userscrudhex.infrastructure.exceptions.EntityNotFoundException;
+
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
 @Getter @Setter
-@Table(name = "users")
+@Document(collection = "users")
 public class User {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     private LocalDate createdAt;
 
     private LocalDate deletedAt;
@@ -42,11 +33,12 @@ public class User {
         this.email = userRequest.getEmail();
         this.password = encodedPassword;
         this.createdAt = LocalDate.now();
+        this.deletedAt = null;
     }
 
     public void update(UserRequest request, String encodedPassword) {
         if (validateDelete()) {
-            throw new EntityNotFoundException("User is deleted");
+            throw new EntityNotFoundException();
         }
 
         this.name = request.getName();
